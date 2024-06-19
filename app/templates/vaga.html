@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Portal de Empregos - Vaga</title>
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet">
+        <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+
+        <script>
+          var vaga = {{ vaga | tojson }};
+          console.log(vaga);
+        </script>
+
+    </head>
+    <body onload="__init__()">
+
+      <!-- Navigation -->
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+          <div class="container">
+            <a class="navbar-brand" href="/">Portal de Empregos</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+    
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                  <a class="nav-link" href="/">Inicio</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/vagas">Vagas</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/criar">Criar</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/sobre">Sobre</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/contatos">Contatos</a>
+                </li>
+
+                {% if 'usuario' in session %}
+                <li class="nav-item">
+                  <a class="nav-link" href="/minhasVagas">Minhas vagas</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/perfil/{{ session['usuario'] }}">Perfil</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/processo/sair">Sair</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                  <a class="nav-link" href="/entrar">Entrar</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/cadastrarse">Cadastrar-se</a>
+                </li>
+                {% endif %}
+
+                {% if session.usuario == "admin" %}
+                <li class="nav-item">
+                  <a class="nav-link" href="/admin">Admin</a>
+                </li>
+                {% endif %}
+                
+              </ul>
+            </div>
+          </div>
+        </nav>
+
+        <!-- Job Details Section -->
+        <section class="container mt-5">
+          <div class="row">
+              <div class="col-md-8">
+                <h2>{{ vaga.titulo }}</h2>
+                <p style="margin-bottom: 5%;">{{ vaga.descricao }}</p>
+                
+                <p><b>Requisitos</b></p>
+                <p style="margin-bottom: 5%;">{{ vaga.requisitos }}</p>
+                
+                <p><b>Salario</b></p>
+                <p style="margin-bottom: 5%;">{{ vaga.salario }}</p>
+              </div>
+              <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                    <h5 class="card-title">Detalhes da Vaga</h5>
+                    <p class="card-text"><strong>Código: </strong>{{ vaga.id }}</p>
+                    <p class="card-text"><strong>Area de atuação: </strong>{{ vaga.area }}</p>
+                    <p class="card-text"><strong>Localização: </strong>{{ vaga.cidade }} - {{ vaga.estado }}</p>
+                    <p class="card-text"><strong>Carga Horária: </strong>{{ vaga.carga_horaria }}</p>
+                    <p class="card-text"><strong>Tipo de Contrato: </strong>{{ vaga.tipo_contrato }}</p>
+                    <p class="card-text"><strong>Modalidade: </strong>{{ vaga.modalidade }}</p>
+                    <p class="card-text"><strong>Postado em </strong>{{ vaga.data_postagem }} <b>por</b> <a href="/perfil/{{vaga.usuario}}">{{  vaga.usuario }}</a></p>
+
+                    {% if session.usuario == vaga.usuario %}
+                      <a href="/editar/{{vaga.id}}" class="btn btn-primary">Editar</a>
+                    {% elif aplicado %}
+                      <p align="center">Você esta aplicado a esta vaga.</p>
+                      <form action="/processo/cancelarAplicacao" method="POST">
+                        <input type="hidden" value={{vaga.id}} name="idVaga">
+                        <input type="hidden" value={{session.usuario}}
+                            name="usuario">
+                        <button type="submit"
+                            class="btn btn-danger">Desistir</button>
+                      </form>
+                    {% else %}
+                      <form action="/processo/aplicarParaVaga" method="POST">
+                        <input type="hidden" value={{ vaga.id }} name="idVaga">
+                        <button type="submit" class="btn btn-primary">Aplicar-se</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+          </div>
+        </section>
+
+        <section class="container">
+          {% if criador %}
+          <h3>Candidatos que se aplicaram para esta vaga.</h3>
+          {% endif %}
+
+          {% if semAplicacoes and criador %}
+          <p>Ninguem se aplicou para esta vaga ainda</p>
+          {% endif %}
+
+          {% for aplicacao in vaga["aplicacoes"] %}
+          <div class="col-md-12">
+              <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><b>Usuário: </b>{{ aplicacao["usuario"] }}</h5>
+                    <p class="card-text"><b>Status: </b>{{ aplicacao["status"] }}</p>
+                    <p class="card-text"></p>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="window.location.href = '/perfil/{{aplicacao.usuario}}'">Ver Perfil</button>
+                        <form action="/processo/reprovarCandidato" method="POST">
+                          <input type="hidden" value={{vaga.id}} name="idVaga">
+                          <input type="hidden" value='{{ aplicacao["usuario"] }}' name="usuario">
+                          <button type="submit" class="btn btn-sm btn-outline-secondary">Reprovar</button>
+                        </form>
+                        <form action="/processo/aprovarCandidato" method="POST">
+                          <input type="hidden" value={{vaga.id}} name="idVaga">
+                          <input type="hidden" value="{{ aplicacao['usuario'] }}" name="usuario">
+                          <button type="submit" class="btn btn-sm btn-outline-secondary">Aprovar</button>
+                        </form>  
+                    </div>
+                    <small class="text-muted"></small>
+                    </div>
+                </div>
+              </div>
+          </div>
+          {% endfor %}
+        </section>
+
+
+
+        <!-- Footer -->
+        <footer class="text-muted py-4 bg-dark mt-5">
+          <div class="container text-center">
+              <p class="mb-0">&copy; 2024 Portal de Empregos</p>
+          </div>
+        </footer>
+
+        
+    </body>
+</html>

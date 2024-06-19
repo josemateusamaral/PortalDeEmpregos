@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Empregos - ADMIN</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+
+    <style>
+      .mensagem-col {
+          max-width: 300px;
+          word-wrap: break-word; 
+          overflow-wrap: break-word; 
+      }
+    </style>
+
+  </head>
+  <body onload="__init__()">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand" href="/">Portal de Empregos</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/">Inicio</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/vagas">Vagas</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/criar">Criar</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/sobre">Sobre</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/contatos">Contatos</a>
+            </li>
+
+            {% if 'usuario' in session %}
+            <li class="nav-item">
+              <a class="nav-link" href="/minhasVagas">Minhas vagas</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/perfil/{{ session['usuario'] }}">Perfil</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/processo/sair">Sair</a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="/entrar">Entrar</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/cadastrarse">Cadastrar-se</a>
+            </li>
+            {% endif %}
+
+            {% if session.usuario == "admin" %}
+            <li class="nav-item">
+              <a class="nav-link" href="/admin">Admin</a>
+            </li>
+            {% endif %}
+
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="mt-5">Mensagens de Contato</h1>
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Mensagem</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contato in contatos %}
+                <tr>
+                    <td>{{contato.id}}</td>
+                    <td class="mensagem-col">{{contato.nome}}</td>
+                    <td class="mensagem-col">{{contato.email}}</td>
+                    <td class="mensagem-col">{{contato.mensagem}}</td>
+                    <td>
+                        <form action="/processo/apagarContato" method="POST">
+                            <input type="hidden" value={{contato.id}} name="id">
+                            <button type="submit" class="btn btn-danger">Apagar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-muted py-4 bg-dark">
+      <div class="container text-center">
+        <p class="mb-0">&copy; 2024 Portal de Empregos</p>
+      </div>
+    </footer>
+  
+  </body>
+</html>

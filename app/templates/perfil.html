@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Empregos - Perfil</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet">
+  <script src="{{ url_for('static', filename='js/perfil.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+
+</head>
+
+<body onload="__init__()">
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="/">Portal de Empregos</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/vagas">Vagas</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/criar">Criar</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/sobre">Sobre</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/contatos">Contatos</a>
+          </li>
+
+          {% if 'usuario' in session %}
+          <li class="nav-item">
+            <a class="nav-link" href="/minhasVagas">Minhas vagas</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="/perfil/{{ session['usuario'] }}">Perfil</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/processo/sair">Sair</a>
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="/entrar">Entrar</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/cadastrarse">Cadastrar-se</a>
+          </li>
+          {% endif %}
+
+          {% if session.usuario == "admin" %}
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">Admin</a>
+          </li>
+          {% endif %}
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5" style="margin-bottom: 5%">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            Perfil de {{ dados["usuario"] }}
+          </div>
+
+          <div class="card-body">
+
+            <img src="{{ url_for('static', filename='data/' + dados.foto) }}" width="30%" height="30%"
+              id="imagemPerfil">
+
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" id="dados-pessoais-tab" data-toggle="tab" href="#dados-pessoais" role="tab"
+                  aria-controls="dados-pessoais" aria-selected="true">Dados Pessoais</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="formacao-tab" data-toggle="tab" href="#formacao" role="tab"
+                  aria-controls="formacao" aria-selected="false">Formação</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="experiencia-tab" data-toggle="tab" href="#experiencia" role="tab"
+                  aria-controls="experiencia" aria-selected="false">Experiência</a>
+              </li>
+            </ul>
+            <!-- Tab panes -->
+
+            <div class="tab-content">
+              <div class="tab-pane fade show active" id="dados-pessoais" role="tabpanel"
+                aria-labelledby="dados-pessoais-tab">
+                <h5 class="card-title mt-3">Dados Pessoais</h5>
+                <p class="card-text"><b>Nome completo: </b>{{ dados["nome"] }}</p>
+                <p class="card-text"><b>Cidade: </b>{{ dados["cidade"] }}</p>
+                <p class="card-text"><b>Estado: </b>{{ dados["estado"] }}</p>
+                <p class="card-text"><b>Genero: </b>{{ dados["genero"] }}</p>
+                <p class="card-text"><b>Nascimento em: </b>{{ dados["dataNascimento"] }}</p>
+                <p class="card-text"><b>Email: </b>{{ dados["email"] }}</p>
+                <p class="card-text"><b>Telefone: </b>{{ dados["telefone"] }}</p>
+                <p class="card-text"><b>Usuario desde: </b>{{ dados["timestamp"] }}</p>
+                <!-- Adicione mais campos conforme necessário -->
+
+                {% if session.usuario == dados["usuario"] %}
+                <button type="button" class="btn btn-primary" id="editar" style="margin-top: 5%;"
+                  onclick="window.location.href = '/editarPerfil';">Editar Perfil</button>
+                {% endif %}
+              </div>
+
+
+
+              <div class="tab-pane fade" id="formacao" role="tabpanel" aria-labelledby="formacao-tab">
+
+                <h5 class="card-title mt-3">Formação</h5>
+
+                {% if session.usuario == dados.usuario %}
+                <button type="button" class="btn btn-primary" style="margin:5%" id="botaoToogleFormacao"
+                  onclick="toogleAdicionarFormacao()">Adicionar</button>
+                {% endif %}
+
+                <!-- Formulário para adicionar novas formações -->
+                <div class="card mb-4 shadow-sm" id="adicionarFormacao" style="display:none">
+                  <div class="card-body">
+                    <h5 class="card-title">Adicionar Nova Formação</h5>
+                    <form action="/processo/adicionarFormacao" method="post">
+                      <div class="form-group">
+                        <label for="titulo">Título:</label>
+                        <input type="text" class="form-control" id="titulo" name="titulo"
+                          placeholder="Insira o título da formação" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="instituicao">Instituição:</label>
+                        <input type="text" class="form-control" id="instituicao" name="instituicao"
+                          placeholder="Insira o nome da instituição" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="estado">Estado:</label>
+                        <input type="text" class="form-control" id="estado" name="estado"
+                          placeholder="Insira o estado da formação">
+                      </div>
+                      <div class="form-group">
+                        <label for="duracao">Duração:</label>
+                        <input type="text" class="form-control" id="duracao" name="duracao"
+                          placeholder="Insira a duração da formação">
+                      </div>
+                      <button type="submit" class="btn btn-primary">Adicionar Formação</button>
+                      <button type="button" class="btn btn-danger" onclick="toogleAdicionarFormacao()">Cancelar</button>
+                    </form>
+                  </div>
+                </div>
+
+                <!-- Formulário para editar formações -->
+                <div class="card mb-4 shadow-sm" id="editarFormacao" style="display:none">
+                  <div class="card-body">
+                    <h5 class="card-title">Editar Formacao</h5>
+                    <form action="/processo/editarFormacao" method="post">
+                      <input type="hidden" name="id" id="idEditarFormacao">
+                      <div class="form-group">
+                        <label for="titulo">Título:</label>
+                        <input type="text" class="form-control" id="tituloEditar" name="titulo"
+                          placeholder="Insira o título da formação" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="instituicao">Instituição:</label>
+                        <input type="text" class="form-control" id="instituicaoEditar" name="instituicao"
+                          placeholder="Insira o nome da instituição" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="estado">Estado:</label>
+                        <input type="text" class="form-control" id="estadoEditar" name="estado"
+                          placeholder="Insira o estado da formação ex: cursando, concluido e etc">
+                      </div>
+                      <div class="form-group">
+                        <label for="duracao">Duração:</label>
+                        <input type="text" class="form-control" id="duracaoEditar" name="duracao"
+                          placeholder="Insira a duração da formação">
+                      </div>
+                      <button type="submit" class="btn btn-primary">Editar Formação</button>
+                      <button type="button" class="btn btn-danger" onclick="editarFormacao()">Cancelar</button>
+                    </form>
+                  </div>
+                </div>
+
+                {% if dados.formacao == [] and session.usuario == dados.usuario %}
+                <p align="center">Você ainda não tem nenhuma formação. Adicione alguma para deixar seu perfil melhor.
+                </p>
+                {% endif %}
+
+                {% if dados.formacao == [] and session.usuario != dados.usuario %}
+                <p align="center">Este usuário ainda não possui nenhuma formação cadastrada.</p>
+                {% endif %}
+
+                {% for formacao in dados.formacao %}
+                <div class="card mb-4 shadow-sm">
+                  <div class="card-body">
+                    <h5 class="card-title">{{ formacao.titulo }}</h5>
+                    <p class="card-text">Instituição: {{ formacao.instituicao }}</p>
+                    <p class="card-text">Estado: {{ formacao.estado }}</p>
+                    <p class="card-text">Duração: {{ formacao.duracao }}</p>
+                    {% if session.usuario == dados.usuario %}
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editarFormacao({{ formacao }})">Editar</button>
+                        <form action="/processo/removerFormacao" method="POST">
+                          <input type="hidden" value="{{ formacao.id }}" name="id">
+                          <button type="submit" class="btn btn-sm btn-outline-secondary">Apagar</button>
+                        </form>
+                      </div>
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+                {% endfor %}
+
+              </div>
+              <div class="tab-pane fade" id="experiencia" role="tabpanel" aria-labelledby="experiencia-tab">
+
+                <h5 class="card-title mt-3">Experiência</h5>
+
+                {% if session.usuario == dados.usuario %}
+                <button type="button" class="btn btn-primary" style="margin:5%" id="botaoToogleExperiencia"
+                  onclick="toogleAdicionarExperiencia()">Adicionar Experiência</button>
+                {% endif %}
+
+                <!-- Formulário para adicionar novas formações -->
+                <div class="card mb-4 shadow-sm" id="adicionarExperiencia" style="display: none;">
+                  <div class="card-body">
+                    <h5 class="card-title">Adicionar Nova Experiência</h5>
+                    <form action="/processo/adicionarExperiencia" method="post">
+                      <div class="form-group">
+                        <label for="titulo">Título:</label>
+                        <input type="text" class="form-control" id="cargo" name="cargo"
+                          placeholder="Insira o cargo da sua experiência" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="empresa">Empresa:</label>
+                        <input type="text" class="form-control" id="empresa" name="empresa"
+                          placeholder="Insira o nome da empresa" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="estado">Estado:</label>
+                        <input type="text" class="form-control" id="estado" name="estado"
+                          placeholder="Insira o estado da experiência">
+                      </div>
+                      <div class="form-group">
+                        <label for="duracao">Duração:</label>
+                        <input type="text" class="form-control" id="duracao" name="duracao"
+                          placeholder="Insira a duração da experiência">
+                      </div>
+                      <button type="submit" class="btn btn-primary">Adicionar Experiência</button>
+                      <button type="button" class="btn btn-danger" onclick="toogleAdicionarExperiencia()">Cancelar</button>
+                    </form>
+                  </div>
+                </div>
+
+                <!-- Formulário para editar experiencias -->
+                <div class="card mb-4 shadow-sm" id="editarExperiencia" style="display: none;">
+                  <div class="card-body">
+                    <h5 class="card-title">Editar Experiência</h5>
+                    <form action="/processo/editarExperiencia" method="post">
+                      <input type="hidden" name="id" id="idEditarExp">
+                      <div class="form-group">
+                        <label for="titulo">Título:</label>
+                        <input type="text" class="form-control" id="cargoEditar" name="cargo"
+                          placeholder="Insira o cargo da sua experiência" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="empresa">Empresa:</label>
+                        <input type="text" class="form-control" id="empresaEditar" name="empresa"
+                          placeholder="Insira o nome da empresa" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="estado">Estado:</label>
+                        <input type="text" class="form-control" id="estadoExpEditar" name="estado"
+                          placeholder="Insira o estado da experiência">
+                      </div>
+                      <div class="form-group">
+                        <label for="duracao">Duração:</label>
+                        <input type="text" class="form-control" id="duracaoExpEditar" name="duracao"
+                          placeholder="Insira a duração da experiência">
+                      </div>
+                      <button type="submit" class="btn btn-primary">Editar Experiência</button>
+                      <button type="button" class="btn btn-danger" onclick="editarExperiencia()">Cancelar</button>
+                    </form>
+                  </div>
+                </div>
+
+                {% if dados.experiencia == [] and session.usuario == dados.usuario %}
+                <p align="center">Você ainda não tem nenhuma experiência. Adicione alguma para deixar seu perfil melhor.
+                </p>
+                {% endif %}
+                {% if dados.experiencia == [] and session.usuario != dados.usuario %}
+                <p align="center">Este usuário ainda não possui nenhuma experiência cadastrada.</p>
+                {% endif %}
+
+                {% for experiencia in dados["experiencia"] %}
+                <div class="card mb-4 shadow-sm">
+                  <div class="card-body">
+                    <h5 class="card-title">{{ experiencia.cargo }}</h5>
+                    <p class="card-text">Empresa: {{ experiencia.empresa }}</p>
+                    <p class="card-text">Estado: {{ experiencia.estado }}</p>
+                    <p class="card-text">Duração: {{ experiencia.duracao }}</p>
+                    {% if session.usuario == dados.usuario %}
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editarExperiencia({{experiencia}})">Editar</button>
+                        <form action="/processo/removerExperiencia" method="POST">
+                          <input type="hidden" value="{{ experiencia.id }}" name="id">
+                          <button type="submit" class="btn btn-sm btn-outline-secondary">Apagar</button>
+                        </form>
+                      </div>
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+                {% endfor %}
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-muted py-4 bg-dark">
+    <div class="container text-center">
+      <p class="mb-0">&copy; 2024 Portal de Empregos</p>
+    </div>
+  </footer>
+
+  {% if novoUsuario %}
+  <script>
+    alert("usuário criado com sucesso :)\nAgora você pode editar os seus dados pessoas e adicionar dados uteis como: Expiência Profissional, Formação e mais.");
+  </script>
+  {% endif %}
+
+</body>
+
+</html>

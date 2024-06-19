@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Portal de Empregos - Vagas</title>
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+        <style></style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+        <link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet">
+        <script>  
+
+            var cidades_e_estados = {{ cidades_e_estados | tojson }};
+
+
+            function criar(){
+  
+            }
+            
+            function abrirFiltros(){
+                document.getElementById("abrirFiltros").classList.add('d-none');
+                document.getElementById("filtros").classList.remove('d-none');
+            }
+
+            
+            function fecharFiltros(){
+                document.getElementById("abrirFiltros").classList.remove('d-none');
+                document.getElementById("filtros").classList.add('d-none');
+            }
+
+            function configFiltros(){
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const parametros = {};
+                urlParams.forEach((value, key) => {
+                    parametros[key] = value;
+                });
+                
+                //vconfigurar o codigo
+                if( "codigo" in parametros ){
+                    document.getElementById("codigo").value = parametros["codigo"];
+                }
+                
+                //configurar o estado
+                if( "estado" in parametros ){
+                    let estado = document.getElementById("estado");
+                    for( let option = 0; option < estado.options.length; option++ ){
+                        if( estado.options[option].value == parametros["estado"] ){
+                            estado.selectedIndex = option;
+                        }
+                    }
+                }
+
+                
+                //configurar o cidade
+                if( "cidade" in parametros ){
+                    atualizarMunicipios(parametros["cidade"]); 
+                    let cidade = document.getElementById("cidade");
+                    cidade.options[0].value = "desativado";
+                    cidade.options[0].innerText = "Filtro Desativado";
+                    cidade.options[0].disabled = false;
+                    cidade.options[0].selected = false;
+                    for( let option = 0; option < cidade.options.length; option++ ){
+                        if( cidade.options[option].value == parametros["cidade"] ){
+                            cidade.selectedIndex = option;
+                        }
+                    }
+                }
+
+                //configurar o carga_horaria
+                if( "carga_horaria" in parametros ){
+                    let carga_horaria = document.getElementById("carga_horaria");
+                    for( let option = 0; option < carga_horaria.options.length; option++ ){
+                        if( carga_horaria.options[option].value == parametros["carga_horaria"] ){
+                            carga_horaria.selectedIndex = option;
+                        }
+                    }
+                }
+
+               //configurar o modalidade
+               if( "modalidade" in parametros ){
+                    let modalidade = document.getElementById("modalidade");
+                    for( let option = 0; option < modalidade.options.length; option++ ){
+                        if( modalidade.options[option].value == parametros["modalidade"] ){
+                            modalidade.selectedIndex = option;
+                        }
+                    }
+                }
+
+                //configurar o tipo contrato
+                if( "tipo_contrato" in parametros ){
+                    let tipo_contrato = document.getElementById("tipo_contrato");
+                    for( let option = 0; option < tipo_contrato.options.length; option++ ){
+                        if( tipo_contrato.options[option].value == parametros["tipo_contrato"] ){
+                            tipo_contrato.selectedIndex = option;
+                        }
+                    }
+                }
+
+                
+
+            }
+
+            function filtrar(){
+                
+                //verificar o codigo
+                let codigo = document.getElementById("codigo");
+                if(codigo.value == ""){
+                    codigo.name = "";
+                }
+
+                //verificar o estado
+                let estado = document.getElementById("estado");
+                if(estado.value == "desativado"){
+                    estado.name = "";
+                }
+
+                //verificar o cidade
+                let cidade = document.getElementById("cidade");
+                if(cidade.value == "desativado"){
+                    cidade.name = "";
+                }
+
+                //verificar o modalidade
+                let modalidade = document.getElementById("modalidade");
+                if(modalidade.value == "desativado"){
+                    modalidade.name = "";
+                }
+
+                //verificar o carga_horaria
+                let carga_horaria = document.getElementById("carga_horaria");
+                if(carga_horaria.value == "desativado"){
+                    carga_horaria.name = "";
+                }
+
+                //verificar o tipo_contrato
+                let tipo_contrato= document.getElementById("tipo_contrato");
+                if(tipo_contrato.value == "desativado"){
+                    tipo_contrato.name = "";
+                }
+
+
+
+
+                return true;
+
+            }
+
+            function atualizarMunicipiosVagas(){
+
+                let cidade = document.getElementById("cidade");
+                let estado = document.getElementById("estado");
+                console.log("estado:",estado.value);
+
+                if( estado.value == "desativado" ){
+                    cidade.innerHTML = `
+                    <option value="desativado" selected>Filtro Desativado</option>
+                    `;
+                }else{
+                    atualizarMunicipios();
+                    cidade.options[0].value = "desativado";
+                    cidade.options[0].innerText = "Filtro Desativado";
+                    cidade.options[0].disabled = false;
+                    cidade.options[0].selected = false;
+                }
+
+            }
+  
+        </script>
+
+    </head>
+    <body onload="__init__(),configurarEstados(),configFiltros()">
+
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="/">Portal de Empregos</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">Inicio</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="vagas">Vagas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="criar">Criar</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="sobre">Sobre</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="contatos">Contatos</a>
+                        </li>
+
+                        {% if 'usuario' in session %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/minhasVagas">Minhas vagas</a>
+                          </li>
+                        <li class="nav-item">
+                        <a class="nav-link" href="/perfil/{{ session['usuario'] }}">Perfil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/processo/sair">Sair</a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                        <a class="nav-link" href="/entrar">Entrar</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/cadastrarse">Cadastrar-se</a>
+                        </li>
+                        {% endif %}
+
+                        {% if session.usuario == "admin" %}
+                        <li class="nav-item">
+                        <a class="nav-link" href="/admin">Admin</a>
+                        </li>
+                        {% endif %}
+                        
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="jumbotron text-center">
+            <div class="container">
+                <h1 class="jumbotron-heading">Encontre o seu emprego dos sonhos</h1>
+                <p class="lead text-muted">Explore milhares de vagas de emprego e dê o próximo passo na sua carreira.</p>
+                <p>
+                    <button type="button" id="abrirFiltros" class="btn btn-primary center" onclick="abrirFiltros()">Filtrar Vagas</button>
+                    <a href="/criar" class="btn btn-secondary my-2">Criar Vaga</a>
+
+                </p>
+            </div>
+        </section>
+
+        <!-- Filters Section -->
+        <section class="container d-none" id="filtros">
+            <form action="/vagas" method="GET" onsubmit="return filtrar()">
+                <h2 class="text-center mb-4">Filtros de Vagas</h2>
+                <div class="justify-content-center">
+                    <div class="form-group">
+                        <label for="jobSalary">Código:</label>
+                        <input type="text" class="form-control" id="codigo" name="codigo" placeholder="Filtro Desativado" style="width:90%">
+                    </div>
+                </div>
+                <div class="justify-content-center">
+                    <div class="form-group">
+                    <label for="estado">Estado:</label>
+                    <select class="form-control" id="estado" name="estado" onchange="atualizarMunicipiosVagas()"  style="width:90%">
+                        <option value="desativado">Filtro Desativado</option>
+                    </select>
+                    </div>
+                </div>
+                <div class="justify-content-center">
+                    <div class="form-group">
+                    <label for="cidade">Cidade:</label>
+                    <select class="form-control" id="cidade" name="cidade" style="width:90%">
+                        <option value="desativado">Filtro Desativado</option>
+                    </select>
+                    </div>
+                </div>
+                <div class="justify-content-center">
+                    <div class="form-group">
+                        <label for="tipo">Carga Horária</label>
+                        <select class="form-control" id="carga_horaria" name="carga_horaria" style="width:90%">
+                            <option value="desativado">Filtro Desativado</option>
+                            <option>Integral</option>
+                            <option>Meio Periodo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="justify-content-center">
+                    <div class="form-group">
+                        <label for="tipo">Modalidade</label>
+                        <select class="form-control" id="modalidade" name="modalidade" style="width:90%">
+                            <option value="desativado">Filtro Desativado</option>
+                            <option>Presencial</option>
+                            <option>Hibrido</option>
+                            <option>Remoto</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="justify-content-center">
+                    <div class="form-group">
+                        <label for="tipo_contrato">Tipo de Contrato</label>
+                        <select class="form-control" id="tipo_contrato" name="tipo_contrato" style="width:90%">
+                            <option value="desativado">Filtro Desativado</option>
+                            <option>CLT</option>
+                            <option>PJ</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="justify-content-center">
+                    <div>
+                        <div class="form-group">
+                            <label for="area">Área de atuação:</label>
+                            <select class="form-control" id="area" style="width:90%">
+                                <option value="desativado">Filtro Desativado</option>
+                                <option value="tecnologia">Tecnologia da Informação e Comunicação (TIC)</option>
+                                <option value="producao">Produção</option>
+                                <option value="saude">Saúde e Medicina</option>
+                                <option value="educacao">Educação e Ensino</option>
+                                <option value="engenharia">Engenharia</option>
+                                <option value="administracao">Administração e Negócios</option>
+                                <option value="artes">Artes e Design</option>
+                                <option value="ciencias">Ciências Sociais e Humanas</option>
+                                <option value="meio-ambiente">Meio Ambiente e Sustentabilidade</option>
+                                <option value="juridico">Jurídico e Direito</option>
+                                <option value="turismo">Turismo e Hospitalidade</option>
+                                <option value="logistica">Logística e Cadeia de Suprimentos</option>
+                                <option value="telecomunicacoes">Engenharia de Telecomunicações</option>
+                                <option value="arquitetura">Arquitetura e Urbanismo</option>
+                                <option value="moda">Design de Moda</option>
+                                <option value="computacao">Ciência da Computação</option>
+                                <option value="pesquisa">Pesquisa de Mercado e Opinião</option>
+                                <option value="projetos">Gestão de Projetos</option>
+                                <option value="recursos-humanos">Recursos Humanos e Desenvolvimento Organizacional</option>
+                                <option value="traducao">Tradução e Interpretação</option>
+                                <option value="comunicacao">Jornalismo e Comunicação Social</option>
+                                <option value="qualidade">Gestão de Qualidade e Processos</option>
+                                <option value="marketing-digital">Marketing Digital</option>
+                                <option value="riscos">Gestão de Riscos e Compliance</option>
+                                <option value="assistencia-social">Assistência Social e Serviço Social</option>
+                                <option value="audiovisual">Produção Audiovisual</option>
+                                <option value="biomedica">Engenharia Biomédica</option>
+                                <option value="geologia">Geologia e Geociências</option>
+                                <option value="seguros">Seguros e Previdência</option>
+                                <option value="educacao-fisica">Educação Física e Esportes</option>
+                                <option value="coaching">Coaching e Desenvolvimento Pessoal</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Add more filters here -->
+                </div>
+                <button type="button" class="btn btn-danger" onclick="fecharFiltros()">Cancelar Filtro</button>
+                <button type="submit" class="btn btn-primary" onclick="filtrar()">Aplicar Filtro</button>
+            </form>
+        </section>
+
+        <hr>
+
+        <!-- Job Listings Section -->
+        <section class="container">
+            <h2 class="text-center mb-4">Vagas encontradas</h2>
+            <div class="row">
+                <!-- Sample Job Listing Card -->
+                {% for vagaDB in vagasBD %}
+                <div class="col-md-4">
+                    <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ vagaDB.titulo }}</h5>
+                        <p class="card-text">{{ vagaDB.modalidade }}</p>
+                        <p class="card-text">{{ vagaDB.cidade }} - {{ vagaDB.estado }}</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href = 'vaga/{{vagaDB.id}}';">Ver</button>
+                                <form action="/processo/aplicarParaVaga" method="POST">
+                                    <input type="hidden" value="{{ vagaDB.id }}" name="idVaga">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Aplicar-se</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                {% endfor %}
+                <!-- Repeat this card for each job listing -->
+        </div>
+        </section>
+
+        {% if semVagas %}
+        <p align="center">Nenhuma vaga encontrada.</p>
+        {% endif %}
+
+        <!-- Footer -->
+        <footer class="text-muted py-4 bg-dark">
+            <div class="container text-center">
+                <p class="mb-0">&copy; 2024 Portal de Empregos</p>
+            </div>
+        </footer>
+
+    </body>
+</html>

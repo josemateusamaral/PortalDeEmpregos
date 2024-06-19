@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Portal de Empregos - Editar Vaga</title>
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+        <link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/editar.js') }}"></script>
+
+        <script>
+
+          var cidades_e_estados = {{ cidades_e_estados | tojson }};
+          var vaga = {{ vaga | tojson }};
+
+          function initicialConfig(){
+
+            console.log(vaga);
+
+            //configurar carga horaria
+            let carga_horaria = document.getElementById("carga_horaria");
+            for( let option = 0; option < carga_horaria.options.length; option++ ){
+              if(carga_horaria.options[option].item == vaga.carga_horaria ){
+                carga_horaria.selectedIndex = option - 1;
+              }
+            }
+
+            //configurar modalidade
+            let modalidade = document.getElementById("modalidade");
+            for( let option = 0; option < modalidade.options.length; option++ ){
+              if(modalidade.options[option].value == vaga.modalidade ){
+                modalidade.selectedIndex = option - 1;
+              }
+            }
+
+            //configurar area
+            let area = document.getElementById("area");
+            for( let option = 0; option < area.options.length; option++ ){
+              if(area.options[option].value == vaga.area ){
+                area.selectedIndex = option - 1;
+              }
+            }
+
+            //configurar estado
+            let estado = document.getElementById("estado");
+            for( let option = 0; option < estado.options.length; option++ ){
+              if(estado.options[option].value == vaga.estado ){
+                estado.selectedIndex = option - 1;
+              }
+            }
+
+            //configurar cidade
+            estado = document.getElementById("estado").value;
+            let seletorCidade = document.getElementById("cidade");
+            seletorCidade.innerHTML = "<option disabled>Selecione sua cidade</option>";
+            for (cidade in cidades_e_estados[estado]["municipios"]) {
+              let nomeCidade = cidades_e_estados[estado]["municipios"][cidade];
+              if( nomeCidade == vaga.cidade ){
+                seletorCidade.innerHTML += `<option selected>${nomeCidade}</option>`;
+              }else{
+                seletorCidade.innerHTML += `<option>${nomeCidade}</option>`;
+              }
+            }
+            console.log(estado);
+
+            //configurar tipo contrato
+            let tipo_contrato = document.getElementById("tipo_contrato");
+            for( let option = 0; option < tipo_contrato.options.length; option++ ){
+              if(tipo_contrato.options[option].item == vaga.tipo_contrato ){
+                tipo_contrato.selectedIndex = option - 1;
+              }
+            }
+
+          }
+        </script>
+
+    </head>
+    <body onload="__init__();configurarEstados();initicialConfig()">
+
+        <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+          <a class="navbar-brand" href="/">Portal de Empregos</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+  
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="/">Inicio</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/vagas">Vagas</a>
+              </li>
+              <li class="nav-item active">
+                <a class="nav-link" href="/criar">Criar</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/sobre">Sobre</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/contatos">Contatos</a>
+              </li>
+
+              {% if 'usuario' in session %}
+              <li class="nav-item">
+                <a class="nav-link" href="/minhasVagas">Minhas vagas</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/perfil/{{ session['usuario'] }}">Perfil</a>
+              </li>
+              <li class="nav-item">
+                  <a class="nav-link" href="/processo/sair">Sair</a>
+              </li>
+              {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="/entrar">Entrar</a>
+              </li>
+              <li class="nav-item">
+                  <a class="nav-link" href="/cadastrarse">Cadastrar-se</a>
+              </li>
+              {% endif %}
+
+              {% if session.usuario == "admin" %}
+              <li class="nav-item">
+                <a class="nav-link" href="/admin">Admin</a>
+              </li>
+              {% endif %}
+              
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      {% if 'usuario' in session %}
+      <!-- Add New Job Form Section -->
+      <section class="container mt-5">
+        <h2 class="mb-4">Editar Vaga</h2>
+        <form action="/processo/editar" method="POST">
+            <input type="hidden" name="idVaga" value={{vaga.id}}>
+            <div class="form-group">
+              <label for="jobTitle">Titulo da Vaga</label>
+              <input type="text" class="form-control" value={{vaga.titulo}} id="titulo" name="titulo" placeholder="Digite o titulo da vaga" required>
+            </div>
+            <div class="form-group">
+              <label for="estado">Estado:</label>
+              <select class="form-control" id="estado" name="estado" onchange="atualizarMunicipios(null)" required>
+                <option disabled>Selecione seu estado</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="cidade">Cidade:</label>
+              <select class="form-control" id="cidade" name="cidade" required>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="jobDescription">Descrição da Vaga</label>
+              <textarea class="form-control" id="descricao" rows="5" name="descricao" placeholder="Digite a descrição da vaga" required>{{vaga.descricao}}</textarea>
+            </div>
+            <div class="form-group">
+              <label for="jobRequirements">Requisitos da Vaga</label>
+              <textarea class="form-control" id="Requisitos" rows="3" name="requisitos" placeholder="Digite os requisitos da vaga" required>{{vaga.requisitos}}</textarea>
+            </div>
+            <div class="form-group">
+              <label for="tipo_contrato">Tipo de Contrato</label>
+              <select class="form-control" id="tipo_contrato" name="tipo_contrato" required>
+                  <option disabled>Selecione o tipo de contrato</option>
+                  <option>CLT</option>
+                  <option>PJ</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="tipo">Carga Horária</label>
+              <select class="form-control" id="carga_horaria" name="carga_horaria" required>
+                  <option disabled>Selecione o tipo de vaga</option>
+                  <option>Integral</option>
+                  <option>Meio Periodo</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="tipo">Modalidade</label>
+              <select class="form-control" id="modalidade" name="modalidade" required>
+                  <option disabled>Selecione a modalidade da vaga</option>
+                  <option>Presencial</option>
+                  <option>Hibrido</option>
+                  <option>Remoto</option>
+              </select>
+            </div>
+            <div class="form-group">
+                <label for="tipoVaga">Área de atuação:</label>
+                <select class="form-control" id="area" name="area">
+                    <option value="">Selecione a área de atuação</option>
+                    <option value="tecnologia">Tecnologia da Informação e Comunicação (TIC)</option>
+                    <option value="producao">Produção</option>
+                    <option value="saude">Saúde e Medicina</option>
+                    <option value="educacao">Educação e Ensino</option>
+                    <option value="engenharia">Engenharia</option>
+                    <option value="administracao">Administração e Negócios</option>
+                    <option value="artes">Artes e Design</option>
+                    <option value="ciencias">Ciências Sociais e Humanas</option>
+                    <option value="meio-ambiente">Meio Ambiente e Sustentabilidade</option>
+                    <option value="juridico">Jurídico e Direito</option>
+                    <option value="turismo">Turismo e Hospitalidade</option>
+                    <option value="logistica">Logística e Cadeia de Suprimentos</option>
+                    <option value="telecomunicacoes">Engenharia de Telecomunicações</option>
+                    <option value="arquitetura">Arquitetura e Urbanismo</option>
+                    <option value="moda">Design de Moda</option>
+                    <option value="computacao">Ciência da Computação</option>
+                    <option value="pesquisa">Pesquisa de Mercado e Opinião</option>
+                    <option value="projetos">Gestão de Projetos</option>
+                    <option value="recursos-humanos">Recursos Humanos e Desenvolvimento Organizacional</option>
+                    <option value="traducao">Tradução e Interpretação</option>
+                    <option value="comunicacao">Jornalismo e Comunicação Social</option>
+                    <option value="qualidade">Gestão de Qualidade e Processos</option>
+                    <option value="marketing-digital">Marketing Digital</option>
+                    <option value="riscos">Gestão de Riscos e Compliance</option>
+                    <option value="assistencia-social">Assistência Social e Serviço Social</option>
+                    <option value="audiovisual">Produção Audiovisual</option>
+                    <option value="biomedica">Engenharia Biomédica</option>
+                    <option value="geologia">Geologia e Geociências</option>
+                    <option value="seguros">Seguros e Previdência</option>
+                    <option value="educacao-fisica">Educação Física e Esportes</option>
+                    <option value="coaching">Coaching e Desenvolvimento Pessoal</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="jobSalary">Salário</label>
+                <input type="text" class="form-control" value={{vaga.salario}} id="jobSalary" name="salario" placeholder="Digite o salario da vaga" required>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Submeter</button>
+                <button type="button" class="btn btn-danger" onclick="window.location.href = '/vaga/{{vaga.id}}';">Cancelar</button>
+            </div>
+        </form>
+      </section>
+      {% else %}
+      <div class="container" style="margin-top:10%"  align="center">
+          <p>Para poder cadastrar uma nova vaga, você precisa estar logado em uma conta !</p>
+          <div class="alert alert-info" role="alert">
+              <strong>Dica: </strong>Ter uma conta sua tras muitos beneficios como o poder de se candidatar a vagas e tambem a possibilidade de manter seus dados pessoas atualizados para que as empresas possam conhecer você melhor
+          </div>
+          <a href="/entrar" class="btn btn-primary">Entrar</a>
+          <a href="/cadastrarse" class="btn btn-primary">Criar Conta</a>
+      </div>
+      {% endif %}
+
+
+        <!-- Footer -->
+        <footer class="text-muted py-4 bg-dark mt-5">
+            <div class="container text-center">
+                <p class="mb-0">&copy; 2024 Portal de Empregos</p>
+            </div>
+        </footer>
+
+    </body>
+</html>

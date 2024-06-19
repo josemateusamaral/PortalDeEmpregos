@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Empregos - Entrar</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/base.css') }}" rel="stylesheet">
+  <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+
+  {% if acessoNegado %}
+  <script>
+    alert("{{mensagemErro}}");
+  </script>
+  {% endif %}
+
+</head>
+<body onload="__init__()">
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" href="/">Portal de Empregos</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/">Inicio</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/vagas">Vagas</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/criar">Criar</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/sobre">Sobre</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/contatos">Contatos</a>
+        </li>
+        {% if 'usuario' in session %}
+        <li class="nav-item">
+          <a class="nav-link" href="/minhasVagas">Minhas vagas</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/perfil/{{ session['usuario'] }}">Perfil</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/processo/sair">Sair</a>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="/entrar">Entrar</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/cadastrarse">Cadastrar-se</a>
+        </li>
+        {% endif %}
+
+        {% if session.usuario == "admin" %}
+        <li class="nav-item">
+          <a class="nav-link" href="/admin">Admin</a>
+        </li>
+        {% endif %}
+
+    </ul>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Cadastro de Usuário -->
+<section class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          Entrar no Portal de Empregos
+        </div>
+        <div class="card-body">
+          <form action="/processo/entrar" method="POST">
+            <div class="form-group">
+              <label for="nome">Usuario:</label>
+              <input type="text" class="form-control" id="nome" name="usuario" value="{{nomeUsuario}}" required>
+            </div>
+            <div class="form-group">
+              <label for="senha">Senha:</label>
+              <input type="password" class="form-control" id="senha" name="senha" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Entrar</button>
+          </form>
+        </div>
+        <p align="center">Não possui uma conta ainda ?<br><a href="/cadastrarse">Criar conta</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="text-muted py-4 bg-dark mt-5">
+  <div class="container text-center">
+    <p class="mb-0">&copy; 2024 Portal de Empregos</p>
+  </div>
+</footer>
+
+</body>
+</html>
